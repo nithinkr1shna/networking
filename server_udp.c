@@ -1,3 +1,4 @@
+
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -17,9 +18,10 @@ int main(){
   int sockfd, newfd, status, numbytes;
   struct addrinfo hints, *res, *p;
   struct sockaddr_storage their_addr;
-  char buf[MAXBUFLEN];
+  char in_buf[MAXBUFLEN], out_buf[MAXBUFLEN];
   char s[INET6_ADDRSTRLEN];
   socklen_t addr_len;
+  struct hostent *hostp;
 
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
@@ -52,21 +54,26 @@ int main(){
     exit(2);
   }
   freeaddrinfo(res);
-  while(1){
-  addr_len = sizeof their_addr;
-  if((numbytes = recvfrom(sockfd, buf, MAXBUFLEN-1, 0, (struct sockaddr*)&their_addr, &addr_len)) == -1){
-    perror("recfrom");
-    exit(1);
-  }
-  inet_ntop(their_addr.ss_family, &their_addr, s, sizeof s);
-  printf("packet contains :%s\n",buf);
+  
+    addr_len = sizeof their_addr;
+    while(1){
+    if((numbytes = recvfrom(sockfd, in_buf, MAXBUFLEN-1, 0, (struct sockaddr*)&their_addr, &addr_len)) == -1){
+      perror("recvfrom");
+      exit(1);
+    }
+    inet_ntop(their_addr.ss_family, &their_addr, s, sizeof s);
+    in_buf[numbytes] = '\0';  
+    printf("Message from %s:%s\n", s, in_buf);
 
-  if((numbytes = sendto(sockfd, buf, strlen(buf), 0, p->ai_addr, p->ai_addrlen)) == 1){
-   
+    if((numbytes = sendto(sockfd, in_buf, strlen(in_buf), 0, (struct sockaddr*)&their_addr, addr_len)) == 1){
+  
     perror("sendto");
     exit(1);
-  }
-  }
-  close(sockfd);
-  return 0;
+   }
+    }
+ close(sockfd);
+ return 0;
 }
+
+
+

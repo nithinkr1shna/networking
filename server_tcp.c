@@ -38,7 +38,7 @@ int main(){
     if((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1){
      
       perror("server:error");
-      continue; //why continue ?
+      continue; 
     }
 
     if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1){
@@ -49,7 +49,7 @@ int main(){
     
     if(bind(sockfd, p->ai_addr, p->ai_addrlen) == -1){
 
-      close(sockfd); // why closed?
+      close(sockfd); 
       perror("server:bind");
       continue;
     }

@@ -1,4 +1,4 @@
-#include<stdio.h>
+B#include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
 #include<sys/types.h>
@@ -54,7 +54,8 @@ int main(){
   if((numbytes = recvfrom(sockfd, msg, MAXBUFLEN-1, 0, (struct sockaddr*)&their_addr, &addr_len)) == -1){
     perror("recvfrom");
     exit(1);
-  } 
+  }
+  msg[numbytes] ='\0'; 
   printf("from server:%s\n", msg);
   }
   freeaddrinfo(res);
