@@ -17,7 +17,7 @@
 #define CLIENT_DATA 9999
 #define SEND_SIZE 1024
 #define BAD_REQ "HTTP/1.0 400 Bad Request\n"
-#define OK "HTTP/1.0 200 OK\r\n"
+#define OK "HTTP/1.0 200 OK"
 #define NOT_FOUND "HTTP/1.0 404 Not Found\n"
 #define PATH_MAX_SIZE 9999
 
@@ -43,6 +43,7 @@ int listen_fd; //fd responsible for listening
 // working directory is the root of the server
 void start_server(char *);
 void respond_to_client(int);
+void response_c(int ,void* , int);
 void print_i(int );
 void print_s(char *str);
 char* get_content_type(char *);
@@ -158,9 +159,12 @@ void respond_to_client(int client){
   char data[CLIENT_DATA], path[PATH_MAX_SIZE], to_send[SEND_SIZE];
   char *requests[3];    
 	int received, fd, num_bytes, total_bytes =0;
-  char buffer[999999], response[999999];
-  char *content_len ="Content-Length: ", *Content_type = "Content-Type: ";
-
+  long len;
+  char buffer[999999], response[999999], header[1000];
+  char *content_len ="Content-Length: ", *content_type = "Content-Type: ";
+  struct stat st;
+  
+ 
 	memset((void*)data, (int)'\0',CLIENT_DATA);
 
 	if((received = recv(clients[client], data, sizeof data, 0)) < 0){
@@ -205,28 +209,14 @@ void respond_to_client(int client){
               //open the file and send it to client
               if((fd = open(path,O_RDONLY)) != -1){
 
-                //send(clients[client], OK, strlen(OK), 0);
-                while((num_bytes = read(fd, to_send, SEND_SIZE)) > 0){
-                  //write(clients[client], to_send, num_bytes);
-                  strcat(buffer,to_send);
-                  total_bytes += num_bytes;
-                  //printf("Bytes :%d\n", num_bytes);
+                stat(path, &st);
+                sprintf(header, "HTTP/1.0 200 OK\r\nContent-Type: %s\r\nContent-Length: %lld\r\n\r\n", get_content_type(requests[1]), st.st_size);
+                response_c(client, header, strlen(header));
+                while((len =read(fd, to_send, SEND_SIZE)) > 0){
+                  response_c(client, to_send,len);
                 }
-                sprintf(length, "%d", total_bytes);
-                strcat(length, "\r\n");
-
-                strcpy(response, OK);
-                strcat(response, content_len);
-                strcat(response, length);
-                strcat(response, Content_type);
-                strcat(response, get_content_type(requests[1]));
-                strcat(response, "\r\n");
-                strcat(response,buffer);
-                strcat(response, "\n");
-                send(clients[client], response, strlen(response), 0);
-                printf("Buffer: %s\n",buffer );
-                printf("Total bytes: %d\n",total_bytes );
-                //close(fd);
+                close(fd);
+                
               }else{
 
 
@@ -246,7 +236,18 @@ void respond_to_client(int client){
 
 }
 
+void response_c(int client, void *message, int msglen)
+{
+    char *msg = (char*) message;
 
+    while (msglen > 0)
+    {
+         int len = write(clients[client], msg, msglen);
+         if (len <= 0) return;
+         msg += len;
+         msglen -= len;
+    }
+}
 
 
 char *get_content_type(char *name){
@@ -275,7 +276,7 @@ char *get_content_type(char *name){
       strcpy(filetype, "text/css");
    }
 
-    strcat(filetype,"\r\n");
+    //strcat(filetype,"\r\n");
     return filetype;
      
 
