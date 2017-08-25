@@ -8,9 +8,9 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-#define PORT "3490"
+#define PORT "4568"
 #define BACKLOG 10
-#define MAXDATASIZE 100
+#define MAXDATASIZE 1024
 
 int main(){
 
@@ -123,8 +123,8 @@ int main(){
                         } 
                     }
                 }
-            } // end of fd_isset
-       } // end for throgh fds
-    }// end of infinite for
+            } 
+       } 
+    }
   return 0;
 }

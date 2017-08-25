@@ -188,10 +188,7 @@ void respond_to_client(int client){
             	printf("bad req\n");
             	write(clients[client], BAD_REQ, sizeof BAD_REQ);
             }else{
-            	//printf("cjeck");
-              //Content-Type =  get_content_type(requests[1]);
-              //Content-Length = 
-              //printf("Content-Type: %s\n",Content-Type );
+            	
             	if(strcmp(requests[1],"/") == 0){ //no file is specified
             		printf("index.html\n");
             		requests[1] ="/index.html";
@@ -231,6 +228,7 @@ void respond_to_client(int client){
                 printf("Total bytes: %d\n",total_bytes );
                 //close(fd);
               }else{
+
 
                 write(clients[client], NOT_FOUND, sizeof NOT_FOUND);
               }
