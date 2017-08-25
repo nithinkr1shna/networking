@@ -197,10 +197,7 @@ void respond_to_client(int client){
             		printf("index.html\n");
             		requests[1] ="/index.html";
                 
-            	}else{
-                printf("have something");
-
-              }
+            	}
             	
               strcpy(path, root);
               strcat(path, requests[1]);
@@ -254,7 +251,7 @@ char *get_content_type(char *name){
     
    
    printf("file name is %s\n",name);
-   //printf("ends with %d\n",endswith("index.html", ".html"));
+   
    if(endswith(name, ".html")){
       printf("type is HTML\n");
       strcpy(filetype, "text/html");
@@ -276,7 +273,7 @@ char *get_content_type(char *name){
       strcpy(filetype, "text/css");
    }
 
-    //strcat(filetype,"\r\n");
+    
     return filetype;
      
 
