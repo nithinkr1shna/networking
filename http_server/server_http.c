@@ -17,10 +17,23 @@
 #define CLIENT_DATA 9999
 #define SEND_SIZE 1024
 #define BAD_REQ "HTTP/1.0 400 Bad Request\n"
-#define OK "HTTP/1.0 200 OK\n\n"
+#define OK "HTTP/1.0 200 OK\r\n"
 #define NOT_FOUND "HTTP/1.0 404 Not Found\n"
 #define PATH_MAX_SIZE 9999
 
+/*char *reply = 
+"HTTP/1.1 200 OK\n"
+"Date: Thu, 19 Feb 2009 12:27:04 GMT\n"
+"Server: Apache/2.2.3\n"
+"Last-Modified: Wed, 18 Jun 2003 16:05:58 GMT\n"
+"ETag: \"56d-9989200-1132c580\"\n"
+"Content-Type: text/html\n"
+"Content-Length: 15\n"
+"Accept-Ranges: bytes\n"
+"Connection: close\n";
+*/
+char length[10];
+char filetype[10];
 char *root;
 char clients[MAX_CLIENT_CONN];
 int listen_fd; //fd responsible for listening
@@ -32,6 +45,7 @@ void start_server(char *);
 void respond_to_client(int);
 void print_i(int );
 void print_s(char *str);
+char* get_content_type(char *);
 
 // main function
 
@@ -140,9 +154,12 @@ void start_server(char *port){
 
 void respond_to_client(int client){
 
+  //char Content-Type[SEND_SIZE], Content-Length[SEND_SIZE];
   char data[CLIENT_DATA], path[PATH_MAX_SIZE], to_send[SEND_SIZE];
-  char *requests[3], response[SEND_SIZE];
-	int received, fd, num_bytes;
+  char *requests[3];    
+	int received, fd, num_bytes, total_bytes =0;
+  char buffer[999999], response[999999];
+  char *content_len ="Content-Length: ", *Content_type = "Content-Type: ";
 
 	memset((void*)data, (int)'\0',CLIENT_DATA);
 
@@ -172,14 +189,16 @@ void respond_to_client(int client){
             	write(clients[client], BAD_REQ, sizeof BAD_REQ);
             }else{
             	//printf("cjeck");
-
+              //Content-Type =  get_content_type(requests[1]);
+              //Content-Length = 
+              //printf("Content-Type: %s\n",Content-Type );
             	if(strcmp(requests[1],"/") == 0){ //no file is specified
             		printf("index.html\n");
             		requests[1] ="/index.html";
                 
             	}else{
                 printf("have something");
-                
+
               }
             	
               strcpy(path, root);
@@ -189,9 +208,27 @@ void respond_to_client(int client){
               //open the file and send it to client
               if((fd = open(path,O_RDONLY)) != -1){
 
-                send(clients[client], OK, strlen(OK), 0);
-                while((num_bytes = read(fd, to_send, SEND_SIZE)) > 0)
-                  write(clients[client], to_send, num_bytes);
+                //send(clients[client], OK, strlen(OK), 0);
+                while((num_bytes = read(fd, to_send, SEND_SIZE)) > 0){
+                  //write(clients[client], to_send, num_bytes);
+                  strcat(buffer,to_send);
+                  total_bytes += num_bytes;
+                  //printf("Bytes :%d\n", num_bytes);
+                }
+                sprintf(length, "%d", total_bytes);
+                strcat(length, "\r\n");
+
+                strcpy(response, OK);
+                //strcat(response, content_len);
+                //strcat(response, length);
+                strcat(response, Content_type);
+                strcat(response, get_content_type(requests[1]));
+                strcat(response, "\r\n");
+                strcat(response,buffer);
+                strcat(response, "\n");
+                send(clients[client], response, strlen(response), 0);
+                printf("Buffer: %s\n",buffer );
+                printf("Total bytes: %d\n",total_bytes );
                 //close(fd);
               }else{
 
@@ -211,7 +248,51 @@ void respond_to_client(int client){
 
 }
 
+
+
+
+char *get_content_type(char *name){
+    
+   
+   printf("file name is %s\n",name);
+   //printf("ends with %d\n",endswith("index.html", ".html"));
+   if(endswith(name, ".html")){
+      printf("type is HTML\n");
+      strcpy(filetype, "text/html");
+   }else if(endswith(name, ".jpg") || endswith(name, ".jpeg")){
+
+      printf("type is image/jepg\n");
+      strcpy(filetype, "image/jpeg");
+   }else if(endswith(name, ".txt")){
+
+      printf("type is text/plain\n");
+      strcpy(filetype, "text/plain");
+   }else if(endswith(name,".gif")){
+
+      printf("type is image/gif\n");
+      strcpy(filetype, "image/gif");
+   }else if(endswith(name, ".css")){
+
+      printf("type is css\n");
+      strcpy(filetype, "text/css");
+   }
+
+    strcat(filetype,"\r\n");
+    return filetype;
+     
+
+}
 //helper functions
+
+int endswith(char *name, char *extension){
+
+  char *dot = strrchr(name, '.');
+  //printf("dot: %s extension: %s\n",dot, extension);
+  if(strcmp(extension, dot) == 0)
+    return 1; //True
+  else
+    return 0; // False
+}
 
 void print_i(int a){
 
