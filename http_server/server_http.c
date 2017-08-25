@@ -216,8 +216,8 @@ void respond_to_client(int client){
                 strcat(length, "\r\n");
 
                 strcpy(response, OK);
-                //strcat(response, content_len);
-                //strcat(response, length);
+                strcat(response, content_len);
+                strcat(response, length);
                 strcat(response, Content_type);
                 strcat(response, get_content_type(requests[1]));
                 strcat(response, "\r\n");
