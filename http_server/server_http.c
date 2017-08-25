@@ -177,7 +177,7 @@ void respond_to_client(int client){
         printf("req0: %s\n", requests[0]);
         if(strncmp(requests[0],"GET\0",4) == 0){ // checking for GET verb
         	
-        	  printf("hei");
+        	  
             requests[1] = strtok(NULL, " \t");
             requests[2] = strtok(NULL, " \t\n");
             printf("req1: %s\n", requests[1]);
