@@ -214,7 +214,7 @@ void respond_to_client(int client){
               
 
               // for scripts
-              if(strncmp(requests[1], "/scripts", 8) == 0){
+              if(strncmp(requests[1], "/scripts", 8) == 0){ // checking if client requests for scripts
                 printf("script detected\nRunning script\n");
                 value = run_script(path);
                 fp = fopen("script_output", "w");
