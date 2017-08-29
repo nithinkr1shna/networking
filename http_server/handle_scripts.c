@@ -6,10 +6,12 @@
 #include <errno.h>
 
 #define OUTPUT_SIZE 9999
+char output[OUTPUT_SIZE];
+char header_and_data[OUTPUT_SIZE];
 
 char* run_script(char *path){
     
-    char output[OUTPUT_SIZE]; 
+  //char output[OUTPUT_SIZE]; 
     int numbytes;
     int link[2];
     pid_t pid, status =0 ;
@@ -31,22 +33,21 @@ char* run_script(char *path){
    	    close(link[1]);
         //sprintf(cmd, "%s%s","python ", path);
         //system(cmd);
-        if(execlp("python","python", path, (char*)0) == -1)
-          perror("execl");
+	    if(execlp("sh","sh","-c", path, (char*)0) == -1)
+               perror("execl");
 
 
     }else{
        
-      close(link[1]);
+        close(link[1]);
     	numbytes = read(link[0], output, sizeof output);
       //close(link[0]);
-      //printf("Output: (%.*s)\n", numbytes, output);
+      printf("Output: (%.*s)\n", numbytes, output);
       wait(NULL);
-  
+        
      
    }
-   
-    
+    //printf("%s\n", output);
     return output;
 
 }

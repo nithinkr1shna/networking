@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Python program to find the factorial of a number provided by the user.
 
+print "Content-Type: text/plain\n\n"
 # change the value for a different result
 num = 7
 

@@ -52,7 +52,6 @@ void response_c(int ,void* , int);
 void print_i(int );
 void print_s(char *str);
 char* get_content_type(char *);
-
 // main function
 
 int main(int argc, char **argv){
@@ -171,7 +170,8 @@ void respond_to_client(int client){
   struct stat st;
   int script =0;
   char *value, *path_p;
-
+ 
+  struct hd header_and_message;
   
  
   memset((void*)data, (int)'\0',CLIENT_DATA);
@@ -217,8 +217,15 @@ void respond_to_client(int client){
               if(strncmp(requests[1], "/scripts", 8) == 0){ // checking if client requests for scripts
                 printf("script detected\nRunning script\n");
                 value = run_script(path);
+		printf("Return :%s\n", value);
+		
+	        header_and_message = split(value);
+		
+		printf("%s\n",header_and_message.head);
+		printf("body:%s\n", header_and_message.body);
+		
                 fp = fopen("script_output", "w");
-                fwrite(value, 1, strlen(value), fp);
+                fwrite(header_and_message.body, 1, strlen(header_and_message.body), fp);
                 fclose(fp);
                 script = 1;
                 
@@ -229,17 +236,18 @@ void respond_to_client(int client){
                    strcat(path2, "/script_output");
                    stat(path2, &st);
                    path_p = path2;
+		   sprintf(header, "HTTP/1.0 200 OK\r\n%s\r\nContent-Length: %lld\r\n\r\n", header_and_message.head, st.st_size);
+		   
                 }else{
                    stat(path, &st);
                    path_p = path;
+		   sprintf(header, "HTTP/1.0 200 OK\r\nContent-Type: %s\r\nContent-Length: %lld\r\n\r\n", get_content_type(requests[1]), st.st_size);
                 }
 
-                
+               
               //open the file and send it to client
               if((fd = open(path_p,O_RDONLY)) != -1 ){
-                
-                
-                sprintf(header, "HTTP/1.0 200 OK\r\nContent-Type: %s\r\nContent-Length: %lld\r\n\r\n", get_content_type(requests[1]), st.st_size);
+               
                 response_c(client, header, strlen(header));
                 while((len =read(fd, to_send, SEND_SIZE)) > 0){
                   
@@ -293,7 +301,7 @@ char *get_content_type(char *name){
 
       printf("type is image/jepg\n");
       strcpy(filetype, "image/jpeg");
-   }else if(endswith(name, ".txt") || strncmp(name, "/scripts", 8) == 0){
+   }else if(endswith(name, ".txt")){
 
       printf("type is text/plain\n");
       strcpy(filetype, "text/plain");
