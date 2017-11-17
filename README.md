@@ -1,4 +1,4 @@
-### This repositiry contains simple networking problems in C and Python.
+# Networking
 
 ### chatroom:
     
