@@ -102,7 +102,7 @@ int main(){
                     }
 
                 }else{
-                    printf("in else\n");          
+                             
 	                if((numbytes = recv(i, buf, sizeof buf, 0)) <= 0){
 	                    if(numbytes == 0) // connection is closed
 	                        printf("socket %d closed\n", i);
